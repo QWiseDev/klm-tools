@@ -1,0 +1,9 @@
+services:
+  klm-tools:
+    build:
+      context: .
+    image: klm-tools:local
+    container_name: klm-tools
+    ports:
+      - "8765:8765"
+    restart: unless-stopped

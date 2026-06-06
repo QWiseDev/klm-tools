@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>本地工具箱</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <div class="brand">工具集合</div>
+          <div class="subhead">本地工具箱</div>
+        </div>
+        <nav id="toolTabs" class="tool-tabs" aria-label="工具列表"></nav>
+      </header>
+
+      <main id="home-view" class="home-view tool-view" data-tool-view="home">
+        <section class="home-hero" aria-labelledby="home-title">
+          <h1 id="home-title">工具集合</h1>
+          <p>选择一个工具开始处理。当前已接入抖音去水印，后续工具会继续加入这里。</p>
+        </section>
+
+        <section>
+          <div class="tool-grid" id="toolGrid" aria-label="工具集合"></div>
+        </section>
+      </main>
+
+      <main id="douyin-video-tool" class="workspace tool-view" data-tool-view="douyin-video" hidden>
+        <section class="input-panel" aria-labelledby="input-title">
+          <div class="section-head">
+            <h1 id="input-title">抖音去水印</h1>
+            <span class="pill">SSR</span>
+          </div>
+
+          <form id="resolveForm" class="resolve-form">
+            <label class="field-label" for="shareInput">抖音短链</label>
+            <input
+              id="shareInput"
+              class="share-input"
+              name="input"
+              type="url"
+              autocomplete="off"
+              spellcheck="false"
+              inputmode="url"
+              placeholder="粘贴包含 https://v.douyin.com/... 的分享内容"
+            />
+            <div class="form-actions">
+              <button id="submitBtn" class="primary-btn" type="submit">
+                <svg aria-hidden="true" viewBox="0 0 24 24">
+                  <path d="M5 12h12m0 0-5-5m5 5-5 5" />
+                </svg>
+                <span>解析视频</span>
+              </button>
+              <button id="clearBtn" class="ghost-btn" type="button">
+                <svg aria-hidden="true" viewBox="0 0 24 24">
+                  <path d="M18 6 6 18M6 6l12 12" />
+                </svg>
+                <span>清空</span>
+              </button>
+            </div>
+          </form>
+
+          <div id="statusBox" class="status-box" role="status" aria-live="polite">
+            <span class="status-dot"></span>
+            <span id="statusText">等待输入</span>
+          </div>
+
+          <div id="errorBox" class="error-box" hidden></div>
+        </section>
+
+        <section class="preview-panel" aria-labelledby="preview-title">
+          <div class="preview-head">
+            <div>
+              <h2 id="preview-title">视频预览</h2>
+              <p id="metaLine">未解析</p>
+            </div>
+            <button id="downloadBtn" class="download-btn" type="button" disabled>
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14" />
+              </svg>
+              <span>下载</span>
+            </button>
+          </div>
+
+          <div class="result-tabs" id="resultTabs" aria-label="解析结果类型">
+            <button class="result-tab active" type="button" data-result-tab="video">视频</button>
+            <button class="result-tab" id="imageTabBtn" type="button" data-result-tab="image" hidden>
+              图片
+            </button>
+            <button class="result-tab" type="button" data-result-tab="text">文案</button>
+          </div>
+
+          <div class="result-panel" data-result-panel="video">
+            <div class="video-frame">
+              <video id="videoPreview" controls playsinline preload="metadata"></video>
+              <div id="emptyPreview" class="empty-preview">等待视频</div>
+            </div>
+
+            <div id="qualityBar" class="quality-bar" aria-label="视频分辨率"></div>
+
+            <div class="detail-strip">
+              <div>
+                <span class="detail-label">当前分辨率</span>
+                <strong id="currentRatio">-</strong>
+              </div>
+              <div>
+                <span class="detail-label">文件大小</span>
+                <strong id="currentSize">-</strong>
+              </div>
+              <div>
+                <span class="detail-label">码率</span>
+                <strong id="currentBitrate">-</strong>
+              </div>
+            </div>
+
+            <div class="url-row">
+              <input id="currentUrl" type="text" readonly value="" aria-label="当前视频地址" />
+              <button id="copyBtn" class="icon-btn" type="button" disabled aria-label="复制当前地址">
+                <svg aria-hidden="true" viewBox="0 0 24 24">
+                  <path d="M9 9h10v10H9z" />
+                  <path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1" />
+                </svg>
+              </button>
+            </div>
+
+            <div id="downloadProgress" class="download-progress" hidden>
+              <div class="progress-track"><span id="progressBar"></span></div>
+              <span id="progressText">准备下载</span>
+            </div>
+          </div>
+
+          <div class="result-panel image-result" data-result-panel="image" hidden>
+            <img id="coverPreview" alt="视频封面" />
+          </div>
+
+          <div class="result-panel text-result" data-result-panel="text" hidden>
+            <div id="captionText" class="caption-text">解析后显示文案</div>
+            <div id="captionMeta" class="caption-meta">未解析</div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

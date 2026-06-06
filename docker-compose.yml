@@ -1,0 +1,7 @@
+services:
+  klm-tools:
+    image: ghcr.io/qwisedev/klm-tools:latest
+    container_name: klm-tools
+    ports:
+      - "8765:8765"
+    restart: unless-stopped
