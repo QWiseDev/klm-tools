@@ -19,7 +19,7 @@
       <main id="home-view" class="home-view tool-view" data-tool-view="home">
         <section class="home-hero" aria-labelledby="home-title">
           <h1 id="home-title">工具集合</h1>
-          <p>选择一个工具开始处理。当前已接入抖音去水印，后续工具会继续加入这里。</p>
+          <p>选择一个工具开始处理。当前已接入抖音去水印和 Token 格式互转，后续工具会继续加入这里。</p>
         </section>
 
         <section>
@@ -140,6 +140,19 @@
             <div id="captionMeta" class="caption-meta">未解析</div>
           </div>
         </section>
+      </main>
+
+      <main
+        id="token-converter-tool"
+        class="embedded-tool-view tool-view"
+        data-tool-view="token-converter"
+        hidden
+      >
+        <iframe
+          class="embedded-tool-frame"
+          src="/token-converter.html"
+          title="Token 格式互转"
+        ></iframe>
       </main>
     </div>
 

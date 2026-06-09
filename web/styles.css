@@ -189,6 +189,23 @@ button:disabled {
   align-items: start;
 }
 
+.embedded-tool-view {
+  min-height: calc(100vh - 118px);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #0d1117;
+  box-shadow: var(--shadow);
+}
+
+.embedded-tool-frame {
+  display: block;
+  width: 100%;
+  min-height: calc(100vh - 120px);
+  border: 0;
+  background: #0d1117;
+}
+
 .input-panel,
 .preview-panel {
   min-width: 0;

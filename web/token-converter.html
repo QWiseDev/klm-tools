@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Token 格式互转 — Codex / CPA / Sub2API</title>
+<style>
+:root { color-scheme: dark; --bg:#0d1117; --panel:#161b22; --border:#30363d; --text:#e6edf3; --muted:#8b949e; --primary:#58a6ff; --success:#3fb950; --warn:#d29922; --danger:#f85149; }
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+.container { max-width:1200px; margin:0 auto; padding:28px 18px; }
+h1 { font-size:24px; margin-bottom:4px; }
+.sub { color:var(--muted); font-size:13px; margin-bottom:20px; }
+.row { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px; }
+@media(max-width:768px){ .row{grid-template-columns:1fr;} }
+.card { background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:16px; display:flex; flex-direction:column; }
+.card h2 { font-size:15px; margin-bottom:10px; display:flex; align-items:center; gap:8px; justify-content:space-between; }
+.badge { font-size:11px; padding:2px 8px; border-radius:4px; font-weight:600; }
+.b-inf{ background:rgba(88,166,255,.15); color:var(--primary); }
+.b-out{ background:rgba(63,185,80,.15); color:var(--success); }
+textarea { flex:1; min-height:380px; background:#0d1117; border:1px solid var(--border); border-radius:8px; color:var(--text); font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:12.5px; padding:12px; resize:vertical; tab-size:2; }
+textarea:focus { outline:2px solid var(--primary); outline-offset:1px; }
+.btn-row { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
+.btn { padding:8px 14px; border:1px solid var(--border); border-radius:6px; background:#21262d; color:var(--text); cursor:pointer; font-size:12.5px; font-weight:600; transition:all .15s; user-select:none; }
+.btn:hover { background:#30363d; border-color:var(--primary); color:#fff; transform:translateY(-1px); box-shadow:0 2px 8px rgba(88,166,255,.2); }
+.btn:active { transform:translateY(0); box-shadow:none; }
+.btn.ac { background:var(--primary); color:#fff; border-color:var(--primary); }
+.btn.ac:hover { background:#79c0ff; border-color:#79c0ff; }
+.btn.ok { background:#238636; color:#fff; border-color:#238636; }
+.btn.ok:hover { background:#2ea043; border-color:#2ea043; }
+select, input[type=text] { padding:5px 8px; border:1px solid var(--border); border-radius:6px; background:var(--panel); color:var(--text); font-size:12.5px; }
+.opt { display:flex; align-items:center; gap:8px; margin-bottom:10px; flex-wrap:wrap; }
+.opt label { font-size:12.5px; color:var(--muted); }
+.meta { margin-top:6px; font-size:11.5px; color:var(--muted); }
+.status { display:none; margin-top:14px; padding:10px 14px; border-radius:6px; font-size:12.5px; }
+.status.show { display:block; }
+.status.ok { background:rgba(63,185,80,.1); border:1px solid var(--success); color:var(--success); }
+.status.err { background:rgba(248,81,73,.1); border:1px solid var(--danger); color:var(--danger); }
+.file-zone { border:2px dashed var(--border); border-radius:8px; padding:20px; text-align:center; color:var(--muted); font-size:13px; cursor:pointer; transition:border-color .15s; position:relative; margin-bottom:8px; }
+.file-zone:hover { border-color:var(--primary); color:var(--primary); }
+.file-zone input { position:absolute; inset:0; opacity:0; cursor:pointer; }
+.file-info { display:none; font-size:11.5px; color:var(--muted); margin-bottom:8px; }
+.file-info.show { display:block; }
+input[type=text] { width:55px; }
+</style>
+</head>
+<body>
+<div class="container">
+<h1>Token 格式互转</h1>
+<p class="sub">Codex auth.json ↔ CPA ↔ Sub2API · 纯前端离线 · 批量支持</p>
+
+<div class="row">
+  <div class="card">
+    <h2>输入 <span class="badge b-inf">INPUT</span></h2>
+    <div class="opt">
+      <label>格式</label>
+      <select id="inFmt"><option value="auto">自动检测</option><option value="codex">Codex auth.json</option><option value="cpa">CPA</option><option value="sub2api">Sub2API</option></select>
+    </div>
+    <div class="file-zone" id="dropZone" style="margin-bottom:6px;">
+      📁 拖拽 JSON 文件 / 文件夹到这里
+    </div>
+    <div class="btn-row" style="margin-bottom:8px;">
+      <button class="btn" id="pickFileBtn">📄 选择文件</button>
+      <button class="btn" id="pickFolderBtn">📂 选择文件夹</button>
+      <input type="file" id="fileInput" accept=".json" multiple style="display:none">
+      <input type="file" id="folderInput" webkitdirectory style="display:none">
+    </div>
+    <div class="file-info" id="fileInfo"></div>
+    <textarea id="inputArea" placeholder="粘贴 JSON 到此处&#10;或拖拽文件到上方区域..."></textarea>
+    <div class="meta" id="inputMeta"></div>
+    <div class="btn-row">
+      <button class="btn ac" id="convertBtn">开始转换 →</button>
+      <button class="btn" id="clearBtn">清空</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>输出 <span class="badge b-out">OUTPUT</span></h2>
+    <div class="opt">
+      <label>格式</label>
+      <select id="outFmt"><option value="codex">Codex auth.json</option><option value="cpa">CPA</option><option value="sub2api">Sub2API</option></select>
+      <label>Plan</label>
+      <input type="text" id="planType" value="team">
+      <label>Prefix</label>
+      <input type="text" id="namePrefix" value="[team]" style="width:65px;">
+    </div>
+    <textarea id="outputArea" readonly placeholder="转换结果..."></textarea>
+    <div class="meta" id="outputMeta">等待转换</div>
+    <div class="btn-row">
+      <button class="btn ok" id="copyBtn">复制</button>
+      <button class="btn ac" id="downloadBtn">下载</button>
+    </div>
+  </div>
+</div>
+
+<div class="status" id="statusBar"></div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const MODELS={"gpt-5.1":"gpt-5.1","gpt-5.1-codex":"gpt-5.1-codex","gpt-5.1-codex-max":"gpt-5.1-codex-max","gpt-5.1-codex-mini":"gpt-5.1-codex-mini","gpt-5.2":"gpt-5.2","gpt-5.2-codex":"gpt-5.2-codex","gpt-5.3":"gpt-5.3","gpt-5.3-codex":"gpt-5.3-codex","gpt-5.4":"gpt-5.4"};
+
+function b64urlDecode(s){s=s.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';return atob(s);}
+function jwtPayload(token){try{const p=token.split('.');if(p.length<2)return{};return JSON.parse(new TextDecoder().decode(Uint8Array.from(b64urlDecode(p[1]),c=>c.charCodeAt(0))));}catch{return{};}}
+function extractAuth(token){const p=jwtPayload(token);return p['https://api.openai.com/auth']||{};}
+
+// ─── Detect format ───
+function detectFormat(obj){
+  if(!obj||typeof obj!=='object')return'unknown';
+  if(obj.auth_mode==='chatgpt'&&obj.tokens)return'codex';
+  if(obj.type==='codex'&&obj.access_token&&obj.refresh_token&&obj.email)return'cpa';
+  if(obj.accounts||obj.platform==='openai'||(obj.credentials&&obj.credentials.refresh_token))return'sub2api';
+  if(obj.access_token&&obj.refresh_token&&!obj.auth_mode)return'cpa';
+  return'unknown';
+}
+
+// ─── Normalize token ───
+function normalizeTokens(input, fmt){
+  const results=[];
+  function addToken(t,f){
+    const email=t.email||(jwtPayload(t.id_token||'')['https://api.openai.com/auth']||{}).chatgpt_user_id||'';
+    const ap=extractAuth(t.access_token||'');
+    const ip=jwtPayload(t.id_token||'');
+    const ia=ip['https://api.openai.com/auth']||{};
+    const orgs=ia.organizations||[];
+    const defOrg=orgs.find(o=>o.is_default);
+    const orgId=defOrg?defOrg.id:(orgs[0]?orgs[0].id:null);
+    const plan=ap.chatgpt_plan_type||ia.chatgpt_plan_type||'team';
+    const acctId=ap.chatgpt_account_id||ia.chatgpt_account_id||t.account_id||'';
+    const userId=ap.chatgpt_user_id||ia.chatgpt_user_id||ia.user_id||'';
+    results.push({
+      email,plan,acctId,userId,orgId,
+      access_token:t.access_token||'',
+      id_token:t.id_token||'',
+      refresh_token:t.refresh_token||'',
+      client_id:jwtPayload(t.access_token||'').client_id||'',
+      expires_at:jwtPayload(t.access_token||'').exp||0,
+      iat:jwtPayload(t.access_token||'').iat||0,
+      last_refresh:t.last_refresh||'',
+      expired:t.expired||'',
+      disabled:t.disabled===true,
+      _raw:t
+    });
+  }
+
+  if(fmt==='codex'){
+    // auth.json format
+    if(Array.isArray(input)) input.forEach(t=>{
+      if(t.tokens) addToken({...t.tokens, last_refresh:t.last_refresh, account_id:t.tokens?.account_id}, 'codex');
+      else addToken(t,'codex');
+    });
+    else if(input.tokens) addToken({...input.tokens, last_refresh:input.last_refresh, account_id:input.tokens?.account_id}, 'codex');
+    else addToken(input,'codex');
+  }else if(fmt==='cpa'){
+    if(Array.isArray(input)) input.forEach(t=>addToken(t,'cpa'));
+    else addToken(input,'cpa');
+  }else if(fmt==='sub2api'){
+    const accounts=input.accounts||(Array.isArray(input)?input:input.accounts?input.accounts:[input]);
+    if(Array.isArray(input)&&!accounts.length) input.forEach(t=>{
+      if(t.credentials) addToken(t.credentials,'sub2api');
+      else addToken(t,'sub2api');
+    });
+    else accounts.forEach(a=>{
+      if(a.credentials) addToken(a.credentials,'sub2api');
+      else addToken(a,'sub2api');
+    });
+  }
+  return results;
+}
+
+function parseInput(content, fmt){
+  let parsed;
+  try{parsed=JSON.parse(content);}catch{
+    // Try line-by-line
+    const lines=content.split('\n').filter(l=>l.trim());
+    const tokens=[];
+    for(const l of lines){try{tokens.push(JSON.parse(l));}catch{}}
+    if(tokens.length) parsed=tokens;
+    else throw new Error('无法解析 JSON');
+  }
+  if(fmt==='auto') fmt=detectFormat(Array.isArray(parsed)?parsed[0]:parsed);
+  return normalizeTokens(parsed, fmt);
+}
+
+// ─── Convert to output ───
+function toCodex(tokens){
+  const configs=tokens.map(t=>{
+    const ip=jwtPayload(t.id_token);
+    const ia=ip['https://api.openai.com/auth']||{};
+    return {
+      auth_mode:"chatgpt", OPENAI_API_KEY:null,
+      tokens:{id_token:t.id_token, access_token:t.access_token, refresh_token:t.refresh_token, account_id:t.acctId||ia.chatgpt_account_id||''},
+      last_refresh:t.last_refresh||''
+    };
+  });
+  return configs.length===1?JSON.stringify(configs[0],null,2):JSON.stringify(configs,null,2);
+}
+
+function toCPA(tokens){
+  const tzOff=8*60*60*1000;
+  const objs=tokens.map(t=>{
+    const exp=t.expires_at;
+    const expStr=exp?new Date(exp*1000+tzOff).toISOString().slice(0,19).replace('T','T'):'';
+    const lr=t.last_refresh||new Date((t.iat||Date.now()/1000)*1000).toISOString();
+    const lrDate=new Date(lr.replace('Z','+00:00'));
+    const lrStr=new Date(lrDate.getTime()+tzOff).toISOString().slice(0,19).replace('T','T');
+    return JSON.stringify({
+      access_token:t.access_token, account_id:t.acctId, disabled:t.disabled||false,
+      email:t.email, expired:expStr, id_token:t.id_token,
+      last_refresh:lrStr, priority:-1, refresh_token:t.refresh_token, type:"codex"
+    });
+  });
+  return objs.join('\n');
+}
+
+function toSub2API(tokens, planType, namePrefix){
+  const tzOff=8*60*60*1000;
+  const accounts=tokens.map(t=>{
+    const exp=t.expires_at;
+    const expStr=exp?new Date(exp*1000).toISOString():new Date(Date.now()+30*86400000).toISOString();
+    const lr=t.last_refresh||new Date((t.iat||Date.now()/1000)*1000).toISOString();
+    const lrDt=new Date(lr.replace('Z','+00:00'));
+    const rg=new Date(lrDt.getTime()+tzOff);
+    const sv=new Date(lrDt.getTime()+7*86400000+tzOff);
+    return {
+      name:`${namePrefix}${t.email}`,platform:"openai",type:"oauth",
+      credentials:{
+        _token_version:Math.floor(lrDt.getTime()),
+        access_token:t.access_token, chatgpt_account_id:t.acctId, chatgpt_user_id:t.userId,
+        client_id:t.client_id, email:t.email, expires_at:expStr,
+        expires_in:t.expires_at?t.expires_at-(t.iat||0):null,
+        id_token:t.id_token, model_mapping:MODELS, organization_id:t.orgId,
+        plan_type:planType, refresh_token:t.refresh_token
+      },
+      extra:{codex_5h_reset_after_seconds:0,codex_5h_reset_at:rg.toISOString().slice(0,19).replace('T','T'),codex_5h_used_percent:0,codex_5h_window_minutes:0,codex_7d_reset_after_seconds:604800,codex_7d_reset_at:sv.toISOString().slice(0,19).replace('T','T'),codex_7d_used_percent:0,codex_7d_window_minutes:10080,codex_primary_over_secondary_percent:0,codex_primary_reset_after_seconds:604800,codex_primary_used_percent:0,codex_primary_window_minutes:10080,codex_secondary_reset_after_seconds:0,codex_secondary_used_percent:0,codex_secondary_window_minutes:0,codex_usage_updated_at:rg.toISOString().slice(0,19).replace('T','T'),privacy_mode:"training_off",openai_oauth_responses_websockets_v2_enabled:false,openai_oauth_responses_websockets_v2_mode:"off"},
+      concurrency:10,priority:1,rate_multiplier:1,auto_pause_on_expired:true,recharged:!t.disabled,
+      recharged_at:rg.toISOString().slice(0,19).replace('T','T')
+    };
+  });
+  return JSON.stringify({exported_at:new Date().toISOString().replace(/\.\d{3}Z$/,'Z'),proxies:[],accounts},null,2);
+}
+
+// ─── Convert ───
+function doConvert(){
+  const content=$('inputArea').value.trim();
+  if(!content){showStatus('请先粘贴或导入 JSON','err');return;}
+  try{
+    const tokens=parseInput(content, $('inFmt').value);
+    if(!tokens.length){showStatus('未识别到有效 token','err');return;}
+    const outFmt=$('outFmt').value;
+    let result;
+    if(outFmt==='codex') result=toCodex(tokens);
+    else if(outFmt==='cpa') result=toCPA(tokens);
+    else result=toSub2API(tokens, $('planType').value, $('namePrefix').value);
+    $('outputArea').value=result;
+    const ext=outFmt==='codex'?'auth.json':outFmt==='cpa'?'config.txt':'token_config.json';
+    $('outputMeta').textContent=`${tokens.length} 个账号 → ${ext}`;
+    $('inputMeta').textContent=`识别 ${tokens.length} 个 token`;
+    showStatus(`转换完成: ${tokens.length} 个账号`, 'ok');
+  }catch(e){
+    showStatus(`转换失败: ${e.message}`,'err');
+    console.error(e);
+  }
+}
+
+function showStatus(msg, type){
+  const s=$('statusBar'); s.textContent=msg; s.className='status show '+type;
+  clearTimeout(s._t); s._t=setTimeout(()=>{s.className='status';},4000);
+}
+
+// ─── File handling ───
+async function handleFiles(files){
+  const jsonFiles=Array.from(files).filter(f=>f.name.endsWith('.json'));
+  if(!jsonFiles.length){showStatus('无 JSON 文件','err');return;}
+  const all=[];
+  for(const f of jsonFiles){
+    try{const t=await f.text(); all.push(JSON.parse(t));}
+    catch(e){showStatus(`读取 ${f.name} 失败: ${e.message}`,'err');}
+  }
+  if(all.length){
+    $('inputArea').value=JSON.stringify(all.length===1?all[0]:all,null,2);
+    $('fileInfo').textContent=`已载入 ${all.length} 个文件`;
+    $('fileInfo').classList.add('show');
+    detectAndUpdateMeta(all);
+  }
+}
+
+function detectAndUpdateMeta(data){
+  const fmt=detectFormat(Array.isArray(data)?data[0]:data);
+  $('inFmt').value=fmt==='unknown'?'auto':fmt;
+  const count=Array.isArray(data)?data.length:1;
+  $('inputMeta').textContent=`检测到 ${count} 个 token · 格式: ${fmt}`;
+}
+
+$('convertBtn').onclick=doConvert;
+$('clearBtn').onclick=()=>{$('inputArea').value='';$('outputArea').value='';$('inputMeta').textContent='';$('outputMeta').textContent='等待转换';$('fileInfo').classList.remove('show');};
+$('copyBtn').onclick=()=>{
+  const v=$('outputArea').value;
+  if(!v){showStatus('无内容','err');return;}
+  navigator.clipboard.writeText(v).then(()=>showStatus('已复制','ok')).catch(()=>showStatus('复制失败，手动选中','err'));
+};
+$('downloadBtn').onclick=()=>{
+  const v=$('outputArea').value;
+  if(!v){showStatus('无内容','err');return;}
+  const fmt=$('outFmt').value;
+  const name=fmt==='codex'?'auth.json':fmt==='cpa'?'config.txt':'token_config.json';
+  const blob=new Blob([v],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name;
+  a.click(); URL.revokeObjectURL(a.href);
+};
+$('pickFileBtn').onclick=()=>$('fileInput').click();
+$('pickFolderBtn').onclick=()=>$('folderInput').click();
+$('fileInput').onchange=e=>{handleFiles(e.target.files);e.target.value='';};
+$('folderInput').onchange=e=>{handleFiles(e.target.files);e.target.value='';};
+
+// Drop zone
+const dz=$('dropZone');
+['dragenter','dragover','dragleave','drop'].forEach(ev=>{
+  dz.addEventListener(ev, e=>{e.preventDefault();e.stopPropagation();});
+  document.body.addEventListener(ev, e=>{e.preventDefault();e.stopPropagation();});
+});
+dz.addEventListener('dragenter',()=>dz.style.borderColor='var(--primary)');
+dz.addEventListener('dragleave',()=>dz.style.borderColor='');
+dz.addEventListener('drop',e=>{
+  dz.style.borderColor='';
+  const files=e.dataTransfer.files;
+  if(files.length) handleFiles(files);
+  else{
+    const text=e.dataTransfer.getData('text/plain');
+    if(text){$('inputArea').value=text;try{detectAndUpdateMeta(JSON.parse(text));}catch{}}
+  }
+});
+
+// Auto-detect on input change
+$('inputArea').addEventListener('input',()=>{
+  try{
+    const d=JSON.parse($('inputArea').value);
+    detectAndUpdateMeta(d);
+  }catch{}
+});
+</script>
+</body>
+</html>

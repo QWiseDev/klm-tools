@@ -8,6 +8,15 @@ const TOOL_DEFINITIONS = [
     viewSelector: '[data-tool-view="douyin-video"]',
     controller: initDouyinVideoTool,
   },
+  {
+    id: "token-converter",
+    label: "Token 格式互转",
+    category: "开发",
+    description: "Codex auth.json、CPA、Sub2API 三向互转，纯前端离线运行。",
+    badge: "离线",
+    viewSelector: '[data-tool-view="token-converter"]',
+    controller: initTokenConverterTool,
+  },
 ];
 
 const toolTabs = document.getElementById("toolTabs");
@@ -405,6 +414,10 @@ function initDouyinVideoTool() {
       shareInput.focus({ preventScroll: true });
     },
   };
+}
+
+function initTokenConverterTool() {
+  return {};
 }
 
 function extractDouyinShortUrl(text) {
