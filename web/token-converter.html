@@ -5,38 +5,39 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Token 格式互转 — Codex / CPA / Sub2API</title>
 <style>
-:root { color-scheme: dark; --bg:#0d1117; --panel:#161b22; --border:#30363d; --text:#e6edf3; --muted:#8b949e; --primary:#58a6ff; --success:#3fb950; --warn:#d29922; --danger:#f85149; }
+:root { color-scheme: light; --bg:#f7f3ea; --panel:#fffaf2; --field:#fffdf8; --border:#ded6c9; --text:#2b2722; --muted:#756d63; --primary:#c15f3c; --primary-dark:#9f4e34; --success:#557a46; --warn:#9a6726; --danger:#b84a42; --shadow:0 14px 42px rgba(47,42,36,.10); }
 * { box-sizing:border-box; margin:0; padding:0; }
-body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
-.container { max-width:1200px; margin:0 auto; padding:28px 18px; }
-h1 { font-size:24px; margin-bottom:4px; }
-.sub { color:var(--muted); font-size:13px; margin-bottom:20px; }
-.row { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px; }
-@media(max-width:768px){ .row{grid-template-columns:1fr;} }
-.card { background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:16px; display:flex; flex-direction:column; }
-.card h2 { font-size:15px; margin-bottom:10px; display:flex; align-items:center; gap:8px; justify-content:space-between; }
+html, body { height:100%; overflow:hidden; }
+body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; background:var(--bg); color:var(--text); }
+.container { max-width:1200px; height:100vh; margin:0 auto; padding:18px; display:flex; flex-direction:column; }
+h1 { font-size:22px; margin-bottom:4px; }
+.sub { color:var(--muted); font-size:13px; margin-bottom:14px; }
+.row { flex:1; min-height:0; display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+@media(max-width:768px){ html,body{overflow:auto;} .container{height:auto;min-height:100vh;} .row{grid-template-columns:1fr;} }
+.card { min-height:0; background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:14px; display:flex; flex-direction:column; box-shadow:var(--shadow); }
+.card h2 { font-size:15px; margin-bottom:8px; display:flex; align-items:center; gap:8px; justify-content:space-between; }
 .badge { font-size:11px; padding:2px 8px; border-radius:4px; font-weight:600; }
-.b-inf{ background:rgba(88,166,255,.15); color:var(--primary); }
-.b-out{ background:rgba(63,185,80,.15); color:var(--success); }
-textarea { flex:1; min-height:380px; background:#0d1117; border:1px solid var(--border); border-radius:8px; color:var(--text); font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:12.5px; padding:12px; resize:vertical; tab-size:2; }
+.b-inf{ background:rgba(193,95,60,.13); color:#8f452e; }
+.b-out{ background:rgba(85,122,70,.14); color:var(--success); }
+textarea { flex:1; min-height:220px; background:var(--field); border:1px solid var(--border); border-radius:8px; color:var(--text); font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:12.5px; padding:12px; resize:none; tab-size:2; }
 textarea:focus { outline:2px solid var(--primary); outline-offset:1px; }
 .btn-row { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
-.btn { padding:8px 14px; border:1px solid var(--border); border-radius:6px; background:#21262d; color:var(--text); cursor:pointer; font-size:12.5px; font-weight:600; transition:all .15s; user-select:none; }
-.btn:hover { background:#30363d; border-color:var(--primary); color:#fff; transform:translateY(-1px); box-shadow:0 2px 8px rgba(88,166,255,.2); }
+.btn { padding:8px 14px; border:1px solid var(--border); border-radius:6px; background:#f1eadf; color:var(--text); cursor:pointer; font-size:12.5px; font-weight:600; transition:all .15s; user-select:none; }
+.btn:hover { background:#eadfce; border-color:var(--primary); color:var(--text); transform:translateY(-1px); box-shadow:0 2px 8px rgba(193,95,60,.18); }
 .btn:active { transform:translateY(0); box-shadow:none; }
 .btn.ac { background:var(--primary); color:#fff; border-color:var(--primary); }
-.btn.ac:hover { background:#79c0ff; border-color:#79c0ff; }
-.btn.ok { background:#238636; color:#fff; border-color:#238636; }
-.btn.ok:hover { background:#2ea043; border-color:#2ea043; }
-select, input[type=text] { padding:5px 8px; border:1px solid var(--border); border-radius:6px; background:var(--panel); color:var(--text); font-size:12.5px; }
-.opt { display:flex; align-items:center; gap:8px; margin-bottom:10px; flex-wrap:wrap; }
+.btn.ac:hover { background:var(--primary-dark); border-color:var(--primary-dark); color:#fff; }
+.btn.ok { background:var(--success); color:#fff; border-color:var(--success); }
+.btn.ok:hover { background:#466f39; border-color:#466f39; color:#fff; }
+select, input[type=text] { padding:5px 8px; border:1px solid var(--border); border-radius:6px; background:var(--field); color:var(--text); font-size:12.5px; }
+.opt { display:flex; align-items:center; gap:8px; margin-bottom:8px; flex-wrap:wrap; }
 .opt label { font-size:12.5px; color:var(--muted); }
 .meta { margin-top:6px; font-size:11.5px; color:var(--muted); }
-.status { display:none; margin-top:14px; padding:10px 14px; border-radius:6px; font-size:12.5px; }
+.status { display:none; margin-top:10px; padding:9px 12px; border-radius:6px; font-size:12.5px; }
 .status.show { display:block; }
-.status.ok { background:rgba(63,185,80,.1); border:1px solid var(--success); color:var(--success); }
-.status.err { background:rgba(248,81,73,.1); border:1px solid var(--danger); color:var(--danger); }
-.file-zone { border:2px dashed var(--border); border-radius:8px; padding:20px; text-align:center; color:var(--muted); font-size:13px; cursor:pointer; transition:border-color .15s; position:relative; margin-bottom:8px; }
+.status.ok { background:rgba(85,122,70,.12); border:1px solid var(--success); color:var(--success); }
+.status.err { background:rgba(184,74,66,.12); border:1px solid var(--danger); color:var(--danger); }
+.file-zone { border:2px dashed var(--border); border-radius:8px; padding:14px; text-align:center; color:var(--muted); font-size:13px; cursor:pointer; transition:border-color .15s; position:relative; margin-bottom:6px; }
 .file-zone:hover { border-color:var(--primary); color:var(--primary); }
 .file-zone input { position:absolute; inset:0; opacity:0; cursor:pointer; }
 .file-info { display:none; font-size:11.5px; color:var(--muted); margin-bottom:8px; }
